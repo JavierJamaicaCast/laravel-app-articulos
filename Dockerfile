@@ -4,6 +4,11 @@ FROM php:8.3-apache
 # Establecemos el directorio de trabajo dentro del contenedor
 WORKDIR /var/www/html
 
+# Instalar Node.js y NPM
+RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - && \
+    apt-get install -y nodejs && \
+    npm install -g npm@latest
+
 # Actualizamos los paquetes del sistema e instalamos las dependencias necesarias
 RUN apt-get update && apt-get install -y \
     libpng-dev \
