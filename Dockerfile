@@ -37,7 +37,7 @@ RUN chown -R www-data:www-data storage bootstrap/cache \
 
 # Instalamos las dependencias de Node.js y compilamos los assets
 RUN npm install \
-    && npm run prod
+    && npm run build
 
 # Configuramos Apache para que el DocumentRoot apunte al directorio public de Laravel
 RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
