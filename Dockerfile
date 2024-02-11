@@ -1,10 +1,10 @@
-# Utilizamos una imagen oficial de PHP con Apache, ideal para aplicaciones Laravel
+# Utilizamos una imagen oficial de PHP con Apache
 FROM php:8.3-apache
 
-# Establecemos el directorio de trabajo en el contenedor. Aquí es donde estará nuestra aplicación
+# Establecemos el directorio de trabajo dentro del contenedor
 WORKDIR /var/www/html
 
-# Instalamos las dependencias del sistema requeridas para Laravel y las extensiones de PHP
+# Actualizamos los paquetes del sistema e instalamos las dependencias necesarias
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
@@ -15,36 +15,35 @@ RUN apt-get update && apt-get install -y \
     git \
     curl \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql zip
+    && docker-php-ext-install gd pdo pdo_mysql zip \
+    && a2enmod rewrite
 
-# Habilitamos el módulo rewrite de Apache, necesario para el enrutamiento de Laravel
-RUN a2enmod rewrite
+# Instalamos Node.js y NPM para la compilación de assets
+RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - \
+    && apt-get install -y nodejs
 
-# Copiamos solo el archivo composer.json y composer.lock primero para aprovechar la caché de Docker
-COPY composer.json composer.lock ./
-
-# Instalamos Composer en el contenedor
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
-# Instalamos las dependencias de PHP con Composer, sin scripts para evitar problemas de permisos
-RUN composer install --no-scripts --no-autoloader --no-dev --prefer-dist
-
-# Ahora copiamos el resto del código de la aplicación Laravel
+# Copiamos los archivos de la aplicación Laravel al directorio de trabajo
 COPY . .
 
-# Finalizamos la instalación de Composer, generando el autoload de clases
-RUN composer dump-autoload --optimize
+# Instalamos Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Cambiamos los permisos de los directorios necesarios para Laravel
+# Instalamos las dependencias de PHP con Composer
+RUN composer install --no-interaction --no-dev --prefer-dist --optimize-autoloader
+
+# Cambiamos los permisos de los directorios para que el servidor web pueda acceder a ellos
 RUN chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-# Opcionalmente, podrías querer ejecutar migraciones o comandos de artisan aquí
-# Pero es recomendable hacerlo manualmente o como parte de tu CI/CD para tener más control
-# Aquí configuramos Apache para que el DocumentRoot apunte al directorio public de Laravel
+# Instalamos las dependencias de Node.js y compilamos los assets
+RUN npm install \
+    && npm run prod
+
+# Configuramos Apache para que el DocumentRoot apunte al directorio public de Laravel
 RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
-# Exponemos el puerto 80
+
+# Exponemos el puerto 80 para que la aplicación Laravel sea accesible desde fuera del contenedor
 EXPOSE 80
 
-# Usamos el comando por defecto de Apache para mantener el contenedor ejecutándose
+# Comando para iniciar el servidor Apache en primer plano cuando se inicie el contenedor
 CMD ["apache2-foreground"]
