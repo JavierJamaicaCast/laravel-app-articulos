@@ -4,6 +4,11 @@ FROM php:8.3-apache
 # Establecemos el directorio de trabajo dentro del contenedor
 WORKDIR /var/www/html
 
+# Instalar Node.js 18 y NPM
+RUN curl -sL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install -y nodejs && \
+    npm install -g npm@latest
+
 # Actualizamos los paquetes del sistema e instalamos las dependencias necesarias
 RUN apt-get update && apt-get install -y \
     libpng-dev \
@@ -18,9 +23,7 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install gd pdo pdo_mysql zip \
     && a2enmod rewrite
 
-# Instalamos Node.js y NPM para la compilación de assets
-RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - \
-    && apt-get install -y nodejs
+
 
 # Copiamos los archivos de la aplicación Laravel al directorio de trabajo
 COPY . .
