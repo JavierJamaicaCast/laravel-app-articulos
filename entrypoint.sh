@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Espera a que la base de datos esté lista (opcional)
-# while ! nc -z db 3306; do
-#   sleep 1
-# done
+while ! nc -z db 3307; do
+    sleep 1
+done
 
 # Verificar si se necesita ejecutar migraciones (puedes verificar si existe una tabla específica, etc.)
 if [ -z "$(php artisan migrate:status | grep 'No migrations found')" ]; then
