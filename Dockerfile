@@ -47,6 +47,9 @@ RUN chown -R www-data:www-data /var/www/html && \
 
 # Exponer el puerto 80
 EXPOSE 80
+# Copiar el script de entrada al contenedor
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+# Establecer el script de entrada como el punto de entrada del contenedor
+ENTRYPOINT ["entrypoint.sh"]
 
-# Comando para iniciar Apache en primer plano
 CMD ["apache2-foreground"]
