@@ -18,14 +18,17 @@ RUN apt-get install -y libpng-dev libjpeg-dev libfreetype6-dev libzip-dev zip un
 # Copiar el código fuente de la aplicación Laravel y los archivos de configuración al directorio de trabajo
 COPY . .
 
+# Añadir archivo de configuración personalizado para Apache
+COPY laravel.conf /etc/apache2/sites-available/laravel.conf
+
+# Habilitar el sitio de Laravel y deshabilitar el predeterminado
+RUN a2ensite laravel.conf && a2dissite 000-default.conf
+
 # Instalar Composer globalmente
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Instalar dependencias de PHP con Composer
 RUN composer install --no-interaction --no-dev --prefer-dist --optimize-autoloader
-
-# Generar clave de aplicación Laravel (opcional aquí, ver nota abajo)
-# RUN php artisan key:generate --no-interaction
 
 # Caché de configuración y rutas de Laravel
 RUN php artisan config:cache && \
@@ -41,9 +44,6 @@ RUN npm install && \
 # Ajustar permisos de los directorios para el servidor web
 RUN chown -R www-data:www-data /var/www/html && \
     chmod -R 775 storage bootstrap/cache
-
-# Configurar DocumentRoot de Apache para apuntar al directorio public de Laravel
-RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
 
 # Exponer el puerto 80
 EXPOSE 80
