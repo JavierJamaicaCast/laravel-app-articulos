@@ -1,8 +1,8 @@
 #!/bin/bash
-
+php artisan config:clear
 # Espera a que la base de datos esté lista (opcional)
-while ! nc -z db 3307; do
-    sleep 1
+while ! nc -z javierjamaica.synology.me 3307; do
+    sleep 5
 done
 
 # Verificar si se necesita ejecutar migraciones (puedes verificar si existe una tabla específica, etc.)

@@ -10,7 +10,7 @@ RUN curl -sL https://deb.nodesource.com/setup_18.x | bash - && \
     npm install -g npm@latest
 
 # Instalar dependencias del sistema necesarias para Laravel y extensiones PHP
-RUN apt-get install -y libpng-dev libjpeg-dev libfreetype6-dev libzip-dev zip unzip git curl && \
+RUN apt-get install -y libpng-dev libjpeg-dev libfreetype6-dev libzip-dev zip unzip git curl netcat-openbsd && \
     docker-php-ext-configure gd --with-freetype --with-jpeg && \
     docker-php-ext-install gd pdo pdo_mysql zip && \
     a2enmod rewrite
